@@ -14,54 +14,80 @@ std::vector<string> sortVector(std::vector<string>&, size_t);
 short int symbolCompare(char, char);
 short int stringCompare(string, string);
 
+/* ƒŒ¡¿¬»“‹ Œœ»—¿Õ»≈ */
 int main(int argc, char** argv)
 {
+	/*std::vector<string> randomOrder = {
+		"agenda", "lifestyle", "conservation", "arrow", "planet", "hang", "despair", "profession", "belief", "wilderness", "pity", "reign", "month", "book", "damn", "moon", "cancel",
+		"crackpot", "threaten", "relation", "dirty", "handicap", "widen", "place", "disgrace", "locate", "flour", "fly", "twist", "attack", "pay", "leftovers", "salmon", "sin",
+		"receipt", "soar", "sugar", "rabbit", "bond", "west", "ranch", "increase", "absent", "spectrum", "halt", "ceremony", "midnight", "ankle", "twitch", "spell", "establish",
+		"incident", "scandal", "teacher", "ancestor", "liver", "fold", "sphere", "glow", "reptile", "barrier", "number", "bottle", "shoot", "ordinary", "cope", "unity", "speculate"
+		"century", "joy", "arrogant", "minority", "authority", "glass", "distance", "technique", "community", "regular", "replace", "relaxation", "way", "rally", "bar", "wife",
+		"expenditure", "file", "shaft", "beat", "myth", "graphic", "imagine", "delivery", "capture", "glacier", "association", "bond", "want", "calm", "pursuit", "news"
+	};*/
+	/*std::vector<string> randomOrder = {
+		"gorilaz", "1kdfg", "[..,re.?><{", "@!!!^&", "ABOBA", "TiKiTaKaTa", "qwerty", "farguS"
+	};*/
 	std::vector<string> randomOrder;
 	string longestWord;
 	size_t longestWordLength = 0;
+	/*for (size_t i = 0; i < randomOrder.size(); ++i)
+	{
+		std::cout << randomOrder[i].getString() << "\n";
+	}
+	std::vector<string> lexOrder = sortRadix(randomOrder, longestWordLength);
+	for (size_t i = lexOrder.size() - 1; i > 0; --i)
+	{
+		for (size_t j = 0; j < lexOrder[i].length(); ++j)
+		{
+			std::cout << (int)lexOrder[i][j] << ".";
+		}
+		std::cout << "\n";
+		std::cout << lexOrder[i].getString() << "\n";
+	}
+	for (size_t j = 0; j < lexOrder[0].length(); ++j)
+	{
+		std::cout << (int)lexOrder[0][j] << ".";
+	}
+	std::cout << lexOrder[0].getString() << "\n";*/
 	if (argc > 1)
 	{
 		for (size_t i = 1; i < argc; ++i)
 		{
 			longestWord = string(argv[i]);
-			std::cout << "argv: " << argv[i] << " string length: " << longestWord.length() << " string: " << longestWord.getString() << "\n";
+			std::cout << "argv: " << argv[i] << " string length: " << longestWord.length() << " string: " << longestWord << "\n";
 			if (longestWord.length() > longestWordLength)
 			{
 				longestWordLength = longestWord.length();
 			}
-			randomOrder.push_back(string(argv[i]));
+			randomOrder.emplace_back(argv[i]);
 		}
 		std::cout << "\n";
 		for (size_t i = 0; i < randomOrder.size(); ++i)
 		{
-			std::cout << randomOrder[i].getString() << "\n";
+			std::cout << randomOrder[i] << "\n";
 		}
 		std::vector<string> lexOrder = sortRadix(randomOrder, longestWordLength);
-		for (size_t i = lexOrder.size() - 1; i > 0 ; --i)
+		for (size_t i = lexOrder.size(); i > 0 ; --i)
 		{
-			for (size_t j = 0; j < lexOrder[i].length(); ++j)
+			for (size_t j = 0; j < lexOrder[i - 1].length(); ++j)
 			{
-				std::cout << (int)lexOrder[i][j] << ".";
+				std::cout << (int)lexOrder[i - 1][j] << ".";
 			}
 			std::cout << "\n";
-			std::cout << lexOrder[i].getString() << "\n";
+			std::cout << lexOrder[i - 1] << "\n";
 		}
-		for (size_t j = 0; j < lexOrder[0].length(); ++j)
-		{
-			std::cout << (int)lexOrder[0][j] << ".";
-		}
-		std::cout << lexOrder[0].getString() << "\n";
 	}
 	
 	//std::vector<string> vec1(argc, argv[0]);
 	//std::vector<string> vec2(0);
-	string a("Hello ");
+	/*string a("Hello ");
 	char t = a[0];
 	string b("World!");
 	string c = a + b;
 	std::cout << "c = a + b = " << c << std::endl;
 	string z = a + b + c;
-	std::cout << "z = a + b + c = " << z << std::endl;
+	std::cout << "z = a + b + c = " << z << std::endl;*/
 	//string z = a + b + "\t" + c;
 	//string* d = new string("sharedPoinderToString_d");
 	//std::cout << "StringZ:\n" << "\tsize: " << z.length() << "\tdata: " << z.getString() << std::endl;
@@ -88,11 +114,18 @@ int main(int argc, char** argv)
 
 std::vector<string> sortRadix(std::vector<string>& randomOrder, size_t longestWordLength)
 {
-	std::vector<std::vector<string>> bitwise(256);
+	std::vector<std::vector<string>> bitwise(26);
 	std::vector<string> strigsBuffer(0);
 	for (size_t i = 0; i < randomOrder.size(); ++i)
 	{
-		bitwise[static_cast<size_t>(randomOrder[i][0])].push_back(randomOrder[i]);
+		if (randomOrder[i][0] > 64 && randomOrder[i][0] < 91)
+		{
+			bitwise[static_cast<size_t>(randomOrder[i][0] - 65)].emplace_back(randomOrder[i]);
+		}
+		if (randomOrder[i][0] > 96 && randomOrder[i][0] < 123)
+		{
+			bitwise[static_cast<size_t>(randomOrder[i][0] - 97)].emplace_back(randomOrder[i]);
+		}
 	}
 	std::cout << "The longest word length: " << longestWordLength << std::endl;
 	for (size_t i = 1; i < longestWordLength; ++i)
@@ -125,11 +158,18 @@ std::vector<string> sortRadix(std::vector<string>& randomOrder, size_t longestWo
 }
 std::vector<string> sortVector(std::vector<string>& firstSymbolVector, size_t symbolCount)
 {
-	std::vector<std::vector<string>> vectorsBuffer(256);
+	std::vector<std::vector<string>> vectorsBuffer(26);
 	std::vector<string> strigsBuffer;
 	for (size_t i = 0; i < firstSymbolVector.size(); ++i)
 	{
-		vectorsBuffer[firstSymbolVector[i][symbolCount]].push_back(firstSymbolVector[i]);
+		if (firstSymbolVector[i][symbolCount] > 64 && firstSymbolVector[i][symbolCount] < 91)
+		{
+			vectorsBuffer[(size_t)firstSymbolVector[i][symbolCount] - 65].push_back(firstSymbolVector[i]);
+		}
+		if (firstSymbolVector[i][symbolCount] > 96 && firstSymbolVector[i][symbolCount] < 123)
+		{
+			vectorsBuffer[(size_t)firstSymbolVector[i][symbolCount] - 97].push_back(firstSymbolVector[i]);
+		}
 	}
 	for (size_t i = 0; i < vectorsBuffer.size(); ++i)
 	{

@@ -102,7 +102,6 @@ namespace custom
 		{
 			delete[] this->pStr;
 		}
-		this->mLength = other.mLength;
 		std::memcpy(this->pStr, other.pStr, this->mLength);
 		return *this;
 	}
@@ -256,13 +255,9 @@ namespace custom
 	size_t string::countLength(const char* string)	// времено
 	{
 		size_t tempLength = 0;
-		while (string[tempLength])
+		while (string[tempLength] != '\0')
 		{
 			++tempLength;
-			if (string[tempLength] == '\0')
-			{
-				break;
-			}
 		}
 		return tempLength;
 	}
