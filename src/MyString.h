@@ -1,5 +1,7 @@
 #pragma once
 
+#include <iostream>
+
 namespace custom
 {
 	class string
@@ -8,33 +10,31 @@ namespace custom
 		string();
 		string(char*);
 		string(const char*);
-		string(string const&); //lvalue - reference
-		string(string&&) noexcept;//rvalue - reference
+		string(string const&);
+		string(string&&) noexcept;
 		~string();
-		//string& operator=(string const&&);
-		//string& operator=(const string&);
-		void operator=(const string&);
+
+		string& operator=(string&&) noexcept;
+		string& operator=(const string&);
+		void operator=(const char*);
+		void operator=(char*);
+
+		string operator+(string const&);
+		friend const string operator+(const string&, const string&);
+		friend const string operator+(const string&, const char*);
+		friend const string operator+(const char*, const string&);
+
+		friend std::ostream& operator<<(std::ostream&, const string&);
+		friend std::istream& operator>>(std::istream&, const string&);
 
 		char& operator[](size_t);
-		//string	operator[](size_t);
-
-		char* operator<<(string const&);
-		//string operator+(string const&);
-		//string& operator+(string const&&)&&; // "&& в конце" - ссылочный пурификатор, чтобы функция вызывалось только для rvalue
-		string& operator+(string const&&)&; // "& в конце" - ссылочный пурификатор, чтобы функция вызывалось только для lvalue
-		friend string operator+(string const&, string const&);
-		//friend string append(string&, ...);
-
-		operator bool() const;
+		operator char*	() const;
+		operator bool	() const;
 
 		const bool operator!=(string const&);
 
 		const bool operator==(string const&);
 
-		size_t length();
-		size_t capacity();
-
-		char* getString();
 		/*const bool operator<(string const&&);
 		friend const bool operator<(string const&, string const&);
 
@@ -53,12 +53,21 @@ namespace custom
 		istream& operator>>(istream&, string const&);*/
 
 		//string operator+(const string&);
+	public:
+		size_t length();
+		size_t capacity();
+		void clear();
+		const char* getString();
+		void push_back(const char c);
+		void reserve(const size_t size);
 
 	protected:
 		string(char*, size_t);
 
-		void move(string&);//rvalue - reference
-		size_t countSize(char*);
+		void move(string&);
+		//friend void memcpy(char*, char*, size_t);
+		size_t countLength(char*);
+		size_t countLength(const char*);
 
 
 	protected:
