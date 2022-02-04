@@ -31,41 +31,27 @@ namespace custom
 		operator char*	() const;
 		operator bool	() const;
 
-		const bool operator!=(string const&);
-
 		const bool operator==(string const&);
-
-		/*const bool operator<(string const&&);
-		friend const bool operator<(string const&, string const&);
-
+		const bool operator!=(string const&);
+		const bool operator<(string const&&);
 		const bool operator>(string const&&);
-		friend const bool operator>(string const&, string const&);
-
 		const bool operator<=(string const&&);
-		friend const bool operator<=(string const&, string const&);
-
 		const bool operator>=(string const&&);
-		friend const bool operator>=(string const&, string const&);*/
-		//string& operator<<(string const&&);
-		/*string& operator>>(string const&);
-		string& operator>>(string const&&);
-		ostream& operator<<(ostream&, string const&);
-		istream& operator>>(istream&, string const&);*/
 
-		//string operator+(const string&);
 	public:
 		size_t length();
 		size_t capacity();
 		void clear();
 		const char* getString();
 		void push_back(const char c);
-		void reserve(const size_t size);
+		void reserve(size_t const&);
+		void resize(size_t const&);
+		void erase();
 
 	protected:
 		string(char*, size_t);
 
 		void move(string&);
-		//friend void memcpy(char*, char*, size_t);
 		size_t countLength(char*);
 		size_t countLength(const char*);
 

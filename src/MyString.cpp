@@ -2,30 +2,30 @@
 
 namespace custom
 {
-	string::string() : pStr(nullptr), mLength(0)
+	string::string() : pStr(nullptr), mLength(0), mCapacity(0) //public constructor
 	{
 	}
-	string::string(char* otherStr) : mLength(countLength(otherStr))
+	string::string(char* otherStr) : mLength(countLength(otherStr)), mCapacity(mLength + 1)
 	{
-		this->pStr = new char[mLength + 1];
+		this->pStr = new char[mCapacity];
 		for (size_t i = 0; i < mLength; ++i)
 		{
 			this->pStr[i] = otherStr[i];
 		}
 		this->pStr[mLength] = '\0';
 	}
-	string::string(const char* otherStr) : mLength(string::countLength(otherStr))
+	string::string(const char* otherStr) : mLength(string::countLength(otherStr)), mCapacity(mLength + 1)
 	{
-		this->pStr = new char[mLength + 1];
+		this->pStr = new char[mCapacity];
 		for (size_t i = 0; i < mLength; ++i)
 		{
 			this->pStr[i] = otherStr[i];
 		}
 		this->pStr[mLength] = '\0';
 	}
-	string::string(const string& other) : mLength(other.mLength)
+	string::string(const string& other) : mLength(other.mLength), mCapacity(other.mCapacity)
 	{
-		this->pStr = new char[mLength + 1];
+		this->pStr = new char[mCapacity];
 		for (size_t i = 0; i < mLength; ++i)
 		{
 			this->pStr[i] = other.pStr[i];
@@ -38,31 +38,10 @@ namespace custom
 		other.mCapacity = 0;
 		other.mLength = 0;
 	}
-	void string::move(string& other)
+	string::string(char* otherStr, size_t otherLength) : mLength(otherLength), mCapacity(mLength + 1), pStr(otherStr) //protected constructor
 	{
-		this->mLength = other.mLength;
-		this->pStr = other.pStr;
-		this->mCapacity = other.mCapacity;
-		other.pStr = nullptr;
-		other.mCapacity = 0;
-		other.mLength = 0;
+		otherStr = nullptr;
 	}
-
-	/*void memcpy(char* dest, char* source, size_t length)
-	{
-		if (dest != nullptr)
-		{
-			delete[] dest;
-		}
-		dest = new char[length + 1];
-		for (size_t i = 0; i < length; ++i)
-		{
-			dest[i] = source[i];
-		}
-		dest[length] = '\0';
-	}*/
-
-
 	string::~string()
 	{
 		if (this->pStr != nullptr)
@@ -70,11 +49,98 @@ namespace custom
 			delete[] this->pStr;
 		}
 	}
+
+
 	string& string::operator=(string&& other) noexcept
 	{
 		move(other);
 		return *this;
 	}
+	string& string::operator=(const string& other)
+	{
+		if (this == &other)
+		{
+			return *this;
+		}
+		if (this->pStr != nullptr)
+		{
+			delete[] this->pStr;
+		}
+		this->mCapacity = (this->mCapacity <= other.mLength + 1) ? other.mLength + 1 : this->mCapacity;
+		this->mLength = other.mLength;
+		this->pStr = new char[mCapacity];
+		std::memcpy(this->pStr, other.pStr, this->mLength);
+		return *this;
+	}
+	void string::operator=(const char* other)
+	{
+		if (this->pStr != nullptr)
+		{
+			delete[] this->pStr;
+		}
+		this->mLength = string::countLength(other);//1
+		this->mCapacity = this->mLength + 1;
+		this->pStr = new char[this->mCapacity];
+		for (size_t i = 0; i < this->mLength; ++i)
+		{
+			this->pStr[i] = other[i];
+		}
+		this->pStr[this->mLength] = '\0';
+	}
+	void string::operator=(char* other)
+	{
+		if (this->pStr != nullptr)
+		{
+			delete[] this->pStr;
+		}
+		this->mLength = string::countLength(other);//2
+		this->mCapacity = this->mLength + 1;
+		this->pStr = new char[this->mCapacity];
+		for (size_t i = 0; i < this->mLength; ++i)
+		{
+			this->pStr[i] = other[i];
+		}
+		this->pStr[this->mLength] = '\0';
+	}
+
+
+	string string::operator+(const string& other)
+	{
+		size_t newSize = this->mLength + other.mLength;
+		char* p = new char[newSize + 1];
+		size_t i = 0;
+		for (; i < this->mLength; ++i)
+		{
+			p[i] = this->pStr[i];
+		}
+		for (size_t j = 0; j < other.mLength; ++j, ++i)
+		{
+			p[i] = other.pStr[j];
+		}
+		p[newSize] = '\0';
+		return string(p, newSize);
+	}
+	const string operator+(const string& leftString, const string& righString) // "внешний" бинарный оператор копирования
+	{
+		string str;
+		str.mLength = leftString.mLength + righString.mLength;
+		str.mCapacity = str.mLength + 1;
+		str.pStr = new char[str.mCapacity];
+		std::memcpy(str.pStr, leftString.pStr, leftString.mLength);
+		std::memcpy(str.pStr + leftString.mLength, righString.pStr, righString.mLength);
+		str.pStr[str.mLength] = '\0';
+		return str;
+	}
+	const string operator+(const string& lstr, const char* rstr)
+	{
+		return (lstr + string(rstr));
+	}
+	const string operator+(const char* lstr, const string& rstr)
+	{
+		return (string(lstr) + rstr);
+	}
+
+
 	std::ostream& operator<<(std::ostream& outStream, const string& str)
 	{
 		std::copy(str.pStr, str.pStr + str.mLength, std::ostream_iterator<char>(outStream));
@@ -92,94 +158,12 @@ namespace custom
 		} while (true);
 		return inputStream;
 	}
-	string& string::operator=(const string& other)
-	{
-		if (this == &other)
-		{
-			return *this;
-		}
-		if (this->pStr != nullptr)
-		{
-			delete[] this->pStr;
-		}
-		std::memcpy(this->pStr, other.pStr, this->mLength);
-		return *this;
-	}
-	void string::operator=(const char* other)
-	{
-		if (this->pStr != nullptr)
-		{
-			delete[] this->pStr;
-		}
-		size_t length = string::countLength(other);
-		this->pStr = new char[length + 1];
-		for (size_t i = 0; i < length; ++i)
-		{
-			this->pStr[i] = other[i];
-		}
-		this->pStr[length] = '\0';
-	}
-	void string::operator=(char* other)
-	{
-		if (this->pStr != nullptr)
-		{
-			delete[] this->pStr;
-		}
-		size_t length = string::countLength(other);
-		this->pStr = new char[length + 1];
-		for (size_t i = 0; i < length; ++i)
-		{
-			this->pStr[i] = other[i];
-		}
-		this->pStr[length] = '\0';
-	}
+
+
 	char& string::operator[](size_t index)
 	{
 		return this->pStr[index];
 	}
-	void string::push_back(const char c)
-	{
-		if (mLength >= mCapacity) {
-			const size_t new_sz = (mLength == 0) ? (mLength + 1) : (mLength * 2);
-			reserve(new_sz);
-		}
-		this->pStr[mLength] = c;
-		this->mLength++;
-		this->pStr[mLength] = '\0';
-	}
-	void string::reserve(const size_t size)
-	{
-		if (mCapacity >= size) {
-			return;
-		}
-		mCapacity = size;
-
-		if (pStr == nullptr) {
-			pStr = new char[mCapacity];
-			return;
-		}
-
-		char* p = new char[mCapacity];
-		std::memcpy(p, pStr, mLength + 1);
-		delete[] pStr;
-		pStr = p;
-	}
-	string string::operator+(const string& other)
-	{
-		size_t newSize = this->mLength + other.mLength + 1;
-		char* p = new char[newSize];
-		size_t i = 0;
-		for (; i < this->mLength; ++i)
-		{
-			p[i] = this->pStr[i];
-		}
-		for (size_t j = 0; j < other.mLength; ++j, ++i)
-		{
-			p[i] = other.pStr[j];
-		}
-		return string(p, newSize);
-	}
-
 	string::operator bool() const
 	{
 		if (pStr == nullptr || this->mLength < 1)
@@ -188,16 +172,11 @@ namespace custom
 		}
 		return true;
 	}
-
-	string::operator char*() const
+	string::operator char* () const
 	{
 		return this->pStr;
 	}
 
-	const bool string::operator!=(const string& other)
-	{
-		return !this->operator==(other);
-	}
 
 	const bool string::operator==(const string& other)
 	{
@@ -214,23 +193,44 @@ namespace custom
 		}
 		return true;
 	}
+	const bool string::operator!=(const string& other)
+	{
+		return !this->operator==(other);
+	}
+	const bool string::operator<(const string&& other)
+	{
+		return (this->mLength < other.mLength) ? true : false;
+	}
+	const bool string::operator>(const string&& other)
+	{
+		return (this->mLength > other.mLength) ? true : false;
+	}
+	const bool string::operator<=(const string&& other)
+	{
+		return (this->mLength <= other.mLength) ? true : false;
+	}
+	const bool string::operator>=(const string&& other)
+	{
+		return (this->mLength >= other.mLength) ? true : false;
+	}
 
-	size_t string::length()		// не готово
+
+	size_t string::length()
 	{
 		return mLength;
 	}
-
 	size_t string::capacity()	// не готово
 	{
 		return mCapacity;
 	}
 
+	/*Moves '\0' to zero index, changes length on 0.
+	But keeps capacity unchanged */
 	void string::clear()
 	{
 		this->pStr[0] = '\0';
 		size_t mLength = 0;
 	}
-
 	const char* string::getString()
 	{
 		if (mLength == 0)
@@ -240,10 +240,86 @@ namespace custom
 		const char* p = pStr;
 		return p;
 	}
+	void string::push_back(const char c)
+	{
+		if (mLength >= mCapacity) {
+			const size_t newLength = (mLength == 0) ? (mLength + 1) : (mLength * 2);
+			reserve(newLength);
+		}
+		this->pStr[mLength] = c;
+		this->mLength++;
+		this->pStr[mLength] = '\0';
+	}
+	void string::reserve(const size_t& size)
+	{
+		if (mCapacity >= size) {
+			return;
+		}
+		mCapacity = size;
 
+		if (pStr == nullptr) {
+			pStr = new char[mCapacity];
+			return;
+		}
+
+		char* p = new char[mCapacity];
+		std::memcpy(p, pStr, mLength + 1);
+		delete[] pStr;
+		pStr = p;
+	}
+	void string::resize(const size_t& newLength)
+	{
+		if (newLength == this->mLength || newLength < 0)
+		{
+			return;
+		}
+		if (newLength == 0)
+		{
+			this->clear();
+			return;
+		}
+		if (newLength > this->mCapacity)
+		{
+			this->mLength = newLength;
+			this->mCapacity = newLength + 1;
+			if (this->pStr != nullptr)
+			{
+				delete[] this->pStr;
+			}
+			this->pStr = new char[this->mCapacity];
+			this->pStr[mLength] = '\0';
+			return;
+		}
+		if (newLength < this->mCapacity)
+		{
+			this->mLength = newLength;
+			this->pStr = new char[newLength + 1];
+			this->pStr[mLength] = '\0';
+		}
+	}
+	void string::erase()
+	{
+		if (this->pStr != nullptr)
+		{
+			delete[] pStr;
+			this->mLength = 0;
+			this->mCapacity = 0;
+		}
+	}
+
+
+	void string::move(string& other)
+	{
+		this->mLength = other.mLength;
+		this->pStr = other.pStr;
+		this->mCapacity = other.mCapacity;
+		other.pStr = nullptr;
+		other.mCapacity = 0;
+		other.mLength = 0;
+	}
 	/* "char* string" must be an array of char symbol with '\0'
 		or this function provide error */
-	size_t string::countLength(char* string)	// времено
+	size_t string::countLength(char* string)
 	{
 		const char* end = string;
 		while (*end != '\0')
@@ -252,7 +328,7 @@ namespace custom
 		}
 		return end - string;
 	}
-	size_t string::countLength(const char* string)	// времено
+	size_t string::countLength(const char* string)
 	{
 		size_t tempLength = 0;
 		while (string[tempLength] != '\0')
@@ -260,56 +336,6 @@ namespace custom
 			++tempLength;
 		}
 		return tempLength;
-	}
-	string::string(char* otherStr, size_t otherLength) : mLength(otherLength)
-	{
-		this->pStr = new char[mLength];
-		for (size_t i = 0; i < mLength; ++i)
-		{
-			this->pStr[i] = otherStr[i];
-		}
-		this->pStr[mLength] = '\0';
-		delete[] otherStr;
-	}
-	const string operator+(const string& leftString, const string& righString)
-	{
-		string str;
-		str.mLength = leftString.mLength + righString.mLength;
-		str.mCapacity = str.mLength + 1;
-		str.pStr = new char[str.mCapacity];
-		std::memcpy(str.pStr, leftString.pStr, leftString.mLength);
-		std::memcpy(str.pStr + leftString.mLength, righString.pStr, righString.mLength);
-		str.pStr[str.mLength] = '\0';
-		return str;
-	}
-	/*const string operator+(const string& leftString, const string& righString)
-	{
-		size_t newLength = leftString.mLength + righString.mLength + 1;
-		char* p = new char[newLength];
-
-		size_t i = 0;
-		while (i < leftString.mLength)
-		{
-			p[i] = leftString.pStr[i];
-			++i;
-		}
-		for (size_t j = 0; j < righString.mLength; ++i, ++j)
-		{
-			p[i] = righString.pStr[j];
-		}
-		p[i] = '\0';
-
-		return string(p, newLength);
-	}*/
-
-	const string operator+(const string& lstr, const char* rstr)
-	{
-		return (lstr + string(rstr));
-	}
-
-	const string operator+(const char* lstr, const string& rstr)
-	{
-		return (string(lstr) + rstr);
 	}
 }
 
